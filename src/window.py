@@ -5,7 +5,7 @@ gi.require_version('Adw', '1')
 from gi.repository import Gtk, Gdk, Adw, GObject
 
 class DetourWindow(Adw.ApplicationWindow):
-    def __init__(self, **kwargs):
+    def __init__(self, folder_path=None, **kwargs):
         super().__init__(**kwargs)
         self.set_title("Détour")
         self.set_default_size(1024, 768)
@@ -27,6 +27,9 @@ class DetourWindow(Adw.ApplicationWindow):
         
         self.setup_ui()
         self.setup_shortcuts()
+
+        if folder_path:
+            self.load_folder(folder_path)
 
     def setup_ui(self):
         # Toast Overlay
