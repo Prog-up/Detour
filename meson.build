@@ -16,3 +16,11 @@ gnome.post_install(
   gtk_update_icon_cache: true,
   update_desktop_database: true
 )
+
+# Run python unit tests
+python = import('python')
+py_prog = python.find_installation('python3')
+test('Python Unit Tests',
+  py_prog,
+  args: ['-m', 'unittest', 'discover', '-s', join_paths(meson.project_source_root(), 'tests')]
+)
