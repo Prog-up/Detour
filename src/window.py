@@ -200,6 +200,7 @@ class DetourWindow(Adw.ApplicationWindow):
         sidebar_box.append(file_list_label)
         
         self.file_list = Gtk.ListBox.new()
+        self.file_list.add_css_class("navigation-sidebar")
         self.file_list.connect("row-selected", self.on_image_selected)
         
         scrolled = Gtk.ScrolledWindow.new()
