@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.prog_up.Detour</id>
+  
+  <name>Détour</name>
+  <summary>Perspective-deskewing image splitter</summary>
+  
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  
+  <developer id="io.github.prog_up">
+    <name>Prog-up</name>
+  </developer>
+  
+  <description>
+    <p>
+      Détour is an interactive image cropping and perspective-deskewing application designed for digitizing scans, photos, cards, or directories.
+    </p>
+    <p>
+      The application allows users to select a folder, dynamically choose the number of splits, adjust selections as 4-vertex quadrilaterals (trapezoids) to handle scan or angle skew, and merge adjacent boundaries for rapid editing.
+    </p>
+  </description>
+  
+  <url type="homepage">https://github.com/Prog-up/Detour</url>
+  
+  <launchable type="desktop-id">io.github.prog_up.Detour.desktop</launchable>
+  
+  <categories>
+    <category>Graphics</category>
+    <category>Photography</category>
+  </categories>
+  
+  <content_rating type="oars-1.1" />
+  
+  <releases>
+    <release version="0.1.0" date="2026-06-20" />
+  </releases>
+  
+  <screenshots>
+    <screenshot type="default">
+      <caption>The main window with the interactive canvas and image preview.</caption>
+      <image>https://raw.githubusercontent.com/Prog-up/Detour/main/data/screenshots/main.png</image>
+    </screenshot>
+  </screenshots>
+</component>

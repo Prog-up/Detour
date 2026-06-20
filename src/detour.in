@@ -1,0 +1,17 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+import signal
+
+# Set up library paths
+pythondir = '@pythondir@'
+
+if os.path.exists(pythondir):
+    sys.path.insert(0, pythondir)
+
+import main
+
+if __name__ == '__main__':
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+    sys.exit(main.main())
