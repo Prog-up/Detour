@@ -65,11 +65,17 @@ class DetourWindow(Adw.ApplicationWindow):
         
         sidebar_header = Adw.HeaderBar.new()
         sidebar_header.set_show_end_title_buttons(False)
+        
         # Add open folder button in sidebar
         btn_open_folder = Gtk.Button.new_from_icon_name("folder-open-symbolic")
         btn_open_folder.set_tooltip_text("Open Folder")
         btn_open_folder.connect("clicked", self.on_open_folder_clicked)
         sidebar_header.pack_start(btn_open_folder)
+        
+        self.sidebar_title_label = Gtk.Label.new("Images")
+        self.sidebar_title_label.add_css_class("title")
+        self.sidebar_title_label.set_markup("<b>Images</b>")
+        sidebar_header.set_title_widget(self.sidebar_title_label)
         
         sidebar_box.append(sidebar_header)
         
@@ -80,18 +86,76 @@ class DetourWindow(Adw.ApplicationWindow):
         pref_box.set_margin_top(12)
         pref_box.set_margin_bottom(12)
         
-        # Split Count row (boxed list)
-        split_count_list = Gtk.ListBox.new()
-        split_count_list.add_css_class("boxed-list")
+        # Layout Mode Section Label
+        layout_label = Gtk.Label.new("Layout Mode")
+        layout_label.set_halign(Gtk.Align.START)
+        layout_label.add_css_class("dim-label")
+        pref_box.append(layout_label)
+        
+        # Layout Mode Selector Box
+        mode_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+        mode_box.add_css_class("linked")
+        mode_box.set_halign(Gtk.Align.CENTER)
+        
+        self.btn_mode_col = Gtk.ToggleButton.new_from_icon_name("view-dual-symbolic")
+        self.btn_mode_col.set_tooltip_text("Columns layout (1 or V)")
+        self.btn_mode_row = Gtk.ToggleButton.new_from_icon_name("view-list-symbolic")
+        self.btn_mode_row.set_tooltip_text("Rows layout (2 or H)")
+        self.btn_mode_grid = Gtk.ToggleButton.new_from_icon_name("view-grid-symbolic")
+        self.btn_mode_grid.set_tooltip_text("Grid layout (3 or G)")
+        self.btn_mode_free = Gtk.ToggleButton.new_from_icon_name("object-select-symbolic")
+        self.btn_mode_free.set_tooltip_text("Freeform crop layout (4 or F)")
+        
+        self.btn_mode_row.set_group(self.btn_mode_col)
+        self.btn_mode_grid.set_group(self.btn_mode_col)
+        self.btn_mode_free.set_group(self.btn_mode_col)
+        
+        self.btn_mode_col.set_active(True)
+        
+        self.btn_mode_col.connect("toggled", self.on_mode_toggled, 'columns')
+        self.btn_mode_row.connect("toggled", self.on_mode_toggled, 'rows')
+        self.btn_mode_grid.connect("toggled", self.on_mode_toggled, 'grid')
+        self.btn_mode_free.connect("toggled", self.on_mode_toggled, 'freeform')
+        
+        mode_box.append(self.btn_mode_col)
+        mode_box.append(self.btn_mode_row)
+        mode_box.append(self.btn_mode_grid)
+        mode_box.append(self.btn_mode_free)
+        pref_box.append(mode_box)
+        
+        # Split Config Settings (Boxed List)
+        split_config_list = Gtk.ListBox.new()
+        split_config_list.add_css_class("boxed-list")
         
         self.split_count_row = Adw.SpinRow()
         self.split_count_row.set_title("Split Count")
-        adj = Gtk.Adjustment.new(3, 1, 100, 1, 1, 0)
-        self.split_count_row.set_adjustment(adj)
+        adj_parts = Gtk.Adjustment.new(3, 1, 100, 1, 1, 0)
+        self.split_count_row.set_adjustment(adj_parts)
         self.split_count_row.set_value(3)
         self.split_count_row.connect("changed", self.on_split_count_changed)
-        split_count_list.append(self.split_count_row)
-        pref_box.append(split_count_list)
+        split_config_list.append(self.split_count_row)
+        
+        self.grid_rows_row = Adw.SpinRow()
+        self.grid_rows_row.set_title("Grid Rows")
+        adj_rows = Gtk.Adjustment.new(2, 1, 20, 1, 1, 0)
+        self.grid_rows_row.set_adjustment(adj_rows)
+        self.grid_rows_row.set_value(2)
+        self.grid_rows_row.connect("changed", self.on_grid_spin_changed)
+        split_config_list.append(self.grid_rows_row)
+        
+        self.grid_cols_row = Adw.SpinRow()
+        self.grid_cols_row.set_title("Grid Columns")
+        adj_cols = Gtk.Adjustment.new(3, 1, 20, 1, 1, 0)
+        self.grid_cols_row.set_adjustment(adj_cols)
+        self.grid_cols_row.set_value(3)
+        self.grid_cols_row.connect("changed", self.on_grid_spin_changed)
+        split_config_list.append(self.grid_cols_row)
+        
+        # Hide grid configurations initially
+        self.grid_rows_row.set_visible(False)
+        self.grid_cols_row.set_visible(False)
+        
+        pref_box.append(split_config_list)
         
         # Status filters (linked toggle buttons)
         filter_label = Gtk.Label.new("Filter Status")
@@ -148,82 +212,51 @@ class DetourWindow(Adw.ApplicationWindow):
         content_header = Adw.HeaderBar.new()
         content_box.append(content_header)
         
-        # Content header left actions: Prev, Reset
+        # Content header left actions: Prev/Next navigation linked box, Reset
+        nav_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+        nav_box.add_css_class("linked")
+        
         btn_prev = Gtk.Button.new_from_icon_name("go-previous-symbolic")
         btn_prev.set_tooltip_text("Previous Image (←)")
         btn_prev.connect("clicked", lambda b: self.navigate('prev'))
-        content_header.pack_start(btn_prev)
+        nav_box.append(btn_prev)
         
-        btn_reset = Gtk.Button.new_with_label("Reset")
+        btn_next = Gtk.Button.new_from_icon_name("go-next-symbolic")
+        btn_next.set_tooltip_text("Next Image (→)")
+        btn_next.connect("clicked", lambda b: self.navigate('next'))
+        nav_box.append(btn_next)
+        
+        content_header.pack_start(nav_box)
+        
+        btn_reset = Gtk.Button.new_from_icon_name("edit-undo-symbolic")
         btn_reset.set_tooltip_text("Reset Layout (R)")
         btn_reset.connect("clicked", lambda b: self.reset_layout_to_equal())
         content_header.pack_start(btn_reset)
         
-        # Content header center mode selector + grid spins
-        header_center_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 12)
+        # Content header center title: active image title
+        self.title_label = Gtk.Label.new("")
+        self.title_label.add_css_class("title")
+        self.title_label.set_markup("<b>No Image</b>")
+        content_header.set_title_widget(self.title_label)
         
-        mode_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-        mode_box.add_css_class("linked")
+        # Content header right actions: Open Split Folder, Merge Neighbors, Save
+        btn_open_splits = Gtk.Button.new_from_icon_name("folder-download-symbolic")
+        btn_open_splits.set_tooltip_text("Open Split Folder")
+        btn_open_splits.connect("clicked", self.on_open_splits_clicked)
+        btn_open_splits.set_sensitive(False)
+        self.btn_open_splits = btn_open_splits
+        content_header.pack_end(btn_open_splits)
         
-        self.btn_mode_col = Gtk.ToggleButton.new_with_label("Columns")
-        self.btn_mode_row = Gtk.ToggleButton.new_with_label("Rows")
-        self.btn_mode_grid = Gtk.ToggleButton.new_with_label("Grid")
-        self.btn_mode_free = Gtk.ToggleButton.new_with_label("Freeform")
-        
-        self.btn_mode_row.set_group(self.btn_mode_col)
-        self.btn_mode_grid.set_group(self.btn_mode_col)
-        self.btn_mode_free.set_group(self.btn_mode_col)
-        
-        self.btn_mode_col.set_active(True)
-        
-        self.btn_mode_col.connect("toggled", self.on_mode_toggled, 'columns')
-        self.btn_mode_row.connect("toggled", self.on_mode_toggled, 'rows')
-        self.btn_mode_grid.connect("toggled", self.on_mode_toggled, 'grid')
-        self.btn_mode_free.connect("toggled", self.on_mode_toggled, 'freeform')
-        
-        mode_box.append(self.btn_mode_col)
-        mode_box.append(self.btn_mode_row)
-        mode_box.append(self.btn_mode_grid)
-        mode_box.append(self.btn_mode_free)
-        header_center_box.append(mode_box)
-        
-        # Grid config box
-        self.grid_config_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 4)
-        self.grid_config_box.append(Gtk.Label.new("  Grid:"))
-        
-        self.grid_rows_spin = Gtk.SpinButton.new_with_range(1, 20, 1)
-        self.grid_rows_spin.set_value(2)
-        self.grid_rows_spin.connect("value-changed", self.on_grid_spin_changed)
-        self.grid_config_box.append(self.grid_rows_spin)
-        
-        self.grid_config_box.append(Gtk.Label.new("×"))
-        
-        self.grid_cols_spin = Gtk.SpinButton.new_with_range(1, 20, 1)
-        self.grid_cols_spin.set_value(3)
-        self.grid_cols_spin.connect("value-changed", self.on_grid_spin_changed)
-        self.grid_config_box.append(self.grid_cols_spin)
-        
-        self.grid_config_box.set_visible(False)
-        header_center_box.append(self.grid_config_box)
-        
-        content_header.set_title_widget(header_center_box)
-        
-        # Content header right actions: Merge Neighbors, Save & Next
-        self.btn_merge = Gtk.ToggleButton.new_with_label("Merge Neighbors")
+        self.btn_merge = Gtk.ToggleButton.new_from_icon_name("insert-link-symbolic")
+        self.btn_merge.set_tooltip_text("Merge Neighbors (M)")
         self.btn_merge.connect("toggled", self.on_merge_toggled)
         content_header.pack_end(self.btn_merge)
         
-        btn_save = Gtk.Button.new_with_label("Save & Next")
+        btn_save = Gtk.Button.new_from_icon_name("document-save-symbolic")
         btn_save.add_css_class("suggested-action")
         btn_save.set_tooltip_text("Save perspective crops and advance (Space / Enter)")
         btn_save.connect("clicked", lambda b: self.save_current_splits())
         content_header.pack_end(btn_save)
-
-        self.btn_open_splits = Gtk.Button.new_with_label("Open Split Folder")
-        self.btn_open_splits.set_tooltip_text("Open the folder containing split images")
-        self.btn_open_splits.connect("clicked", self.on_open_splits_clicked)
-        self.btn_open_splits.set_sensitive(False)
-        content_header.pack_end(self.btn_open_splits)
         
         # Drawing Canvas
         from canvas import DetourCanvas
@@ -317,9 +350,11 @@ class DetourWindow(Adw.ApplicationWindow):
     def load_folder(self, path):
         if not path or not os.path.isdir(path):
             self.show_toast("Selected path is not a valid directory.")
+            self.sidebar_title_label.set_markup("<b>Images</b>")
             return
             
         self.folder_path = path
+        self.sidebar_title_label.set_markup(f"<b>{os.path.basename(path)}</b>")
         self.btn_open_splits.set_sensitive(True)
         from imaging import list_images
         self.images = list_images(path)
@@ -361,20 +396,10 @@ class DetourWindow(Adw.ApplicationWindow):
             name_label.set_halign(Gtk.Align.START)
             name_label.set_hexpand(True)
             name_label.set_ellipsize(3) # END
-            
-            size_str = f"{img['width']}×{img['height']}" if img['width'] > 0 else ""
-            dim_label = Gtk.Label.new(size_str)
-            dim_label.add_css_class("dim-label")
-            
-            dot = Gtk.Image.new_from_icon_name("media-record-symbolic")
             if img['status'] == 'done':
-                dot.add_css_class("success")
-            else:
-                dot.add_css_class("dim-label")
+                name_label.add_css_class("dim-label")
                 
             row_box.append(name_label)
-            row_box.append(dim_label)
-            row_box.append(dot)
             
             row = Gtk.ListBoxRow.new()
             row.set_child(row_box)
@@ -404,6 +429,11 @@ class DetourWindow(Adw.ApplicationWindow):
 
     def select_image(self, img):
         self.active_image = img
+        if not img:
+            self.title_label.set_markup("<b>No Image</b>")
+            return
+            
+        self.title_label.set_markup(f"<b>{img['name']}</b>")
         
         # Load image preview surface
         from imaging import load_display_surface
@@ -431,8 +461,8 @@ class DetourWindow(Adw.ApplicationWindow):
                 self.grid_cols = self.last_layout['cols_val']
                 
                 self.updating_ui = True
-                self.grid_rows_spin.set_value(self.grid_rows)
-                self.grid_cols_spin.set_value(self.grid_cols)
+                self.grid_rows_row.set_value(self.grid_rows)
+                self.grid_cols_row.set_value(self.grid_cols)
                 self.updating_ui = False
         else:
             self.current_mode = 'columns'
@@ -522,8 +552,8 @@ class DetourWindow(Adw.ApplicationWindow):
     def on_grid_spin_changed(self, spin):
         if self.updating_ui:
             return
-        self.grid_rows = int(self.grid_rows_spin.get_value())
-        self.grid_cols = int(self.grid_cols_spin.get_value())
+        self.grid_rows = int(self.grid_rows_row.get_value())
+        self.grid_cols = int(self.grid_cols_row.get_value())
         self.num_parts = self.grid_rows * self.grid_cols
         self.reset_layout_to_equal()
 
@@ -540,8 +570,10 @@ class DetourWindow(Adw.ApplicationWindow):
         self.save_last_layout()
 
     def update_mode_visibility(self):
-        self.grid_config_box.set_visible(self.current_mode == 'grid')
-        self.split_count_row.set_sensitive(self.current_mode != 'grid')
+        is_grid = (self.current_mode == 'grid')
+        self.split_count_row.set_visible(not is_grid)
+        self.grid_rows_row.set_visible(is_grid)
+        self.grid_cols_row.set_visible(is_grid)
 
     def show_toast(self, message):
         toast = Adw.Toast.new(message)
