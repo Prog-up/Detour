@@ -528,29 +528,43 @@ class DetourWindow(Adw.ApplicationWindow):
             split_image(self.active_image['path'], self.boxes)
             self.show_toast(f"Successfully saved {len(self.boxes)} cropped quads!")
             
-            # Re-read status of this image from files
-            self.active_image['status'] = 'done'
-            
-            # Save index we were at
+            # Find the next image in the current list before we filter it out
+            next_img = None
             current_idx = -1
             for i, img in enumerate(self.filtered_images):
                 if img['path'] == self.active_image['path']:
                     current_idx = i
                     break
                     
+            if current_idx != -1 and current_idx + 1 < len(self.filtered_images):
+                next_img = self.filtered_images[current_idx + 1]
+                
+            # Mark current active image as done in memory
+            self.active_image['status'] = 'done'
+            for img in self.images:
+                if img['path'] == self.active_image['path']:
+                    img['status'] = 'done'
+                    break
+            
             # Re-apply filters which updates ListBox
             self.apply_filter()
             
-            # Select next image if possible
-            if current_idx != -1:
-                next_img = None
-                if current_idx < len(self.filtered_images):
-                    next_img = self.filtered_images[current_idx]
-                elif len(self.filtered_images) > 0:
-                    next_img = self.filtered_images[-1]
-                    
-                if next_img:
+            # Select the next image if we found one
+            if next_img:
+                exists_in_filtered = any(img['path'] == next_img['path'] for img in self.filtered_images)
+                if exists_in_filtered:
                     self.select_image(next_img)
+                elif len(self.filtered_images) > 0:
+                    select_idx = min(current_idx, len(self.filtered_images) - 1)
+                    self.select_image(self.filtered_images[select_idx])
+                else:
+                    self.active_image = None
+                    self.canvas.set_image(None)
+                    self.canvas.set_boxes([])
+                    self.show_toast("All items processed or end of list reached!")
+            else:
+                if len(self.filtered_images) > 0:
+                    self.select_image(self.filtered_images[0])
                 else:
                     self.active_image = None
                     self.canvas.set_image(None)
