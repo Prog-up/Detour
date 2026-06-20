@@ -2,7 +2,7 @@ import os
 import gi
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
-from gi.repository import Gtk, Gdk, Adw, GObject
+from gi.repository import Gtk, Gdk, Adw, GObject, Gio
 
 class DetourWindow(Adw.ApplicationWindow):
     def __init__(self, folder_path=None, **kwargs):
@@ -218,6 +218,12 @@ class DetourWindow(Adw.ApplicationWindow):
         btn_save.set_tooltip_text("Save perspective crops and advance (Space / Enter)")
         btn_save.connect("clicked", lambda b: self.save_current_splits())
         content_header.pack_end(btn_save)
+
+        self.btn_open_splits = Gtk.Button.new_with_label("Open Split Folder")
+        self.btn_open_splits.set_tooltip_text("Open the folder containing split images")
+        self.btn_open_splits.connect("clicked", self.on_open_splits_clicked)
+        self.btn_open_splits.set_sensitive(False)
+        content_header.pack_end(self.btn_open_splits)
         
         # Drawing Canvas
         from canvas import DetourCanvas
@@ -290,12 +296,31 @@ class DetourWindow(Adw.ApplicationWindow):
         except Exception as e:
             print("Folder selection error:", e)
 
+    def on_open_splits_clicked(self, button):
+        if not self.folder_path:
+            self.show_toast("No folder is currently open.")
+            return
+            
+        split_dir = os.path.join(self.folder_path, 'split')
+        if not os.path.isdir(split_dir):
+            try:
+                os.makedirs(split_dir, exist_ok=True)
+            except Exception as e:
+                self.show_toast(f"Could not create split folder: {e}")
+                return
+                
+        try:
+            Gio.AppInfo.launch_default_for_uri("file://" + os.path.abspath(split_dir), None)
+        except Exception as e:
+            self.show_toast(f"Failed to open folder: {e}")
+
     def load_folder(self, path):
         if not path or not os.path.isdir(path):
             self.show_toast("Selected path is not a valid directory.")
             return
             
         self.folder_path = path
+        self.btn_open_splits.set_sensitive(True)
         from imaging import list_images
         self.images = list_images(path)
         
