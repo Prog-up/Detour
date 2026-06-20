@@ -1,8 +1,8 @@
 # Desktop file
-desktop_file = i18n.merge_file(
+desktop_file = configure_file(
   input: 'io.github.prog_up.Detour.desktop.in',
   output: 'io.github.prog_up.Detour.desktop',
-  type: 'desktop',
+  configuration: configuration_data(),
   install: true,
   install_dir: join_paths(get_option('datadir'), 'applications')
 )
@@ -10,15 +10,15 @@ desktop_file = i18n.merge_file(
 desktop_file_validate = find_program('desktop-file-validate', required: false)
 if desktop_file_validate.found()
   test('Validate desktop file', desktop_file_validate,
-    args: [desktop_file.full_path()]
+    args: [desktop_file]
   )
 endif
 
 # Metainfo file
-metainfo_file = i18n.merge_file(
+metainfo_file = configure_file(
   input: 'io.github.prog_up.Detour.metainfo.xml.in',
   output: 'io.github.prog_up.Detour.metainfo.xml',
-  type: 'xml',
+  configuration: configuration_data(),
   install: true,
   install_dir: join_paths(get_option('datadir'), 'metainfo')
 )
@@ -26,7 +26,7 @@ metainfo_file = i18n.merge_file(
 appstreamcli = find_program('appstreamcli', required: false)
 if appstreamcli.found()
   test('Validate metainfo file', appstreamcli,
-    args: ['validate', '--no-net', metainfo_file.full_path()]
+    args: ['validate', '--no-net', metainfo_file]
   )
 endif
 
