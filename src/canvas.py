@@ -140,7 +140,7 @@ class DetourCanvas(Gtk.DrawingArea):
             cr.show_text(label)
             
         # Draw unique handles
-        from .models import unique_handles
+        from models import unique_handles
         handles = unique_handles(self.boxes)
         for handle in handles:
             pt = handle['pt']
@@ -174,7 +174,7 @@ class DetourCanvas(Gtk.DrawingArea):
             return
             
         # Hit test handles first
-        from .models import unique_handles
+        from models import unique_handles
         handles = unique_handles(self.boxes)
         for handle in handles:
             pt = handle['pt']
@@ -253,7 +253,7 @@ class DetourCanvas(Gtk.DrawingArea):
             return
             
         # Hit test handles
-        from .models import unique_handles
+        from models import unique_handles
         handles = unique_handles(self.boxes)
         for handle in handles:
             pt = handle['pt']

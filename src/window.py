@@ -31,7 +31,7 @@ class DetourWindow(Adw.ApplicationWindow):
     def setup_ui(self):
         # Toast Overlay
         self.toast_overlay = Adw.ToastOverlay.new()
-        self.set_child(self.toast_overlay)
+        self.set_content(self.toast_overlay)
         
         # Main Stack
         self.main_stack = Gtk.Stack.new()
@@ -217,7 +217,7 @@ class DetourWindow(Adw.ApplicationWindow):
         content_header.pack_end(btn_save)
         
         # Drawing Canvas
-        from .canvas import DetourCanvas
+        from canvas import DetourCanvas
         self.canvas = DetourCanvas()
         self.canvas.set_vexpand(True)
         self.canvas.set_hexpand(True)
@@ -293,7 +293,7 @@ class DetourWindow(Adw.ApplicationWindow):
             return
             
         self.folder_path = path
-        from .imaging import list_images
+        from imaging import list_images
         self.images = list_images(path)
         
         if not self.images:
@@ -378,7 +378,7 @@ class DetourWindow(Adw.ApplicationWindow):
         self.active_image = img
         
         # Load image preview surface
-        from .imaging import load_display_surface
+        from imaging import load_display_surface
         try:
             surface = load_display_surface(img['path'])
             self.canvas.set_image(surface)
@@ -387,7 +387,7 @@ class DetourWindow(Adw.ApplicationWindow):
             return
             
         # Re-apply or reset layout
-        from .models import Point, Quad, apply_neighbors_merge, unmerge
+        from models import Point, Quad, apply_neighbors_merge, unmerge
         if self.last_layout and len(self.last_layout['boxes']) == self.num_parts:
             self.current_mode = self.last_layout['mode']
             self.boxes = []
@@ -409,7 +409,7 @@ class DetourWindow(Adw.ApplicationWindow):
         else:
             self.current_mode = 'columns'
             self.num_parts = int(self.split_count_row.get_value())
-            from .models import make_layout
+            from models import make_layout
             self.boxes = make_layout(self.current_mode, self.num_parts, self.grid_rows, self.grid_cols)
             
         if self.merge_neighbors:
@@ -433,7 +433,7 @@ class DetourWindow(Adw.ApplicationWindow):
         if not self.active_image:
             return
             
-        from .models import make_layout, apply_neighbors_merge
+        from models import make_layout, apply_neighbors_merge
         if self.current_mode == 'grid':
             self.num_parts = self.grid_rows * self.grid_cols
             
@@ -503,7 +503,7 @@ class DetourWindow(Adw.ApplicationWindow):
         if self.updating_ui:
             return
         self.merge_neighbors = button.get_active()
-        from .models import apply_neighbors_merge, unmerge
+        from models import apply_neighbors_merge, unmerge
         if self.merge_neighbors:
             apply_neighbors_merge(self.current_mode, self.boxes, self.grid_rows, self.grid_cols)
         else:
@@ -523,7 +523,7 @@ class DetourWindow(Adw.ApplicationWindow):
         if not self.active_image or not self.boxes:
             return
             
-        from .imaging import split_image
+        from imaging import split_image
         try:
             split_image(self.active_image['path'], self.boxes)
             self.show_toast(f"Successfully saved {len(self.boxes)} cropped quads!")

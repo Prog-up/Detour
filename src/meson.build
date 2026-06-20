@@ -1,5 +1,5 @@
-pkgdatadir = join_paths(get_option('datadir'), meson.project_name())
-pythondir = join_paths(get_option('libdir'), meson.project_name())
+pkgdatadir = join_paths(get_option('prefix'), get_option('datadir'), meson.project_name())
+pythondir = join_paths(get_option('prefix'), get_option('libdir'), meson.project_name())
 
 python_sources = [
   'main.py',
