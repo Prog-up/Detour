@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Détour
+Comment=Perspective-deskewing image splitter
+Exec=detour %F
+Icon=io.github.prog_up.Detour
+Terminal=false
+Type=Application
+Categories=Graphics;Photography;
+MimeType=image/jpeg;image/png;image/webp;
+StartupNotify=true
