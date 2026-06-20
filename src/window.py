@@ -97,13 +97,17 @@ class DetourWindow(Adw.ApplicationWindow):
         mode_box.add_css_class("linked")
         mode_box.set_halign(Gtk.Align.CENTER)
         
-        self.btn_mode_col = Gtk.ToggleButton.new_from_icon_name("view-dual-symbolic")
+        self.btn_mode_col = Gtk.ToggleButton.new()
+        self.btn_mode_col.set_icon_name("view-dual-symbolic")
         self.btn_mode_col.set_tooltip_text("Columns layout (1 or V)")
-        self.btn_mode_row = Gtk.ToggleButton.new_from_icon_name("view-list-symbolic")
+        self.btn_mode_row = Gtk.ToggleButton.new()
+        self.btn_mode_row.set_icon_name("view-list-symbolic")
         self.btn_mode_row.set_tooltip_text("Rows layout (2 or H)")
-        self.btn_mode_grid = Gtk.ToggleButton.new_from_icon_name("view-grid-symbolic")
+        self.btn_mode_grid = Gtk.ToggleButton.new()
+        self.btn_mode_grid.set_icon_name("view-grid-symbolic")
         self.btn_mode_grid.set_tooltip_text("Grid layout (3 or G)")
-        self.btn_mode_free = Gtk.ToggleButton.new_from_icon_name("object-select-symbolic")
+        self.btn_mode_free = Gtk.ToggleButton.new()
+        self.btn_mode_free.set_icon_name("object-select-symbolic")
         self.btn_mode_free.set_tooltip_text("Freeform crop layout (4 or F)")
         
         self.btn_mode_row.set_group(self.btn_mode_col)
@@ -247,7 +251,8 @@ class DetourWindow(Adw.ApplicationWindow):
         self.btn_open_splits = btn_open_splits
         content_header.pack_end(btn_open_splits)
         
-        self.btn_merge = Gtk.ToggleButton.new_from_icon_name("insert-link-symbolic")
+        self.btn_merge = Gtk.ToggleButton.new()
+        self.btn_merge.set_icon_name("insert-link-symbolic")
         self.btn_merge.set_tooltip_text("Merge Neighbors (M)")
         self.btn_merge.connect("toggled", self.on_merge_toggled)
         content_header.pack_end(self.btn_merge)
