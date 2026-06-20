@@ -83,6 +83,7 @@ def load_display_surface(path, max_px=1600):
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
         data = img.tobytes("raw", "BGRA")
         surface.get_data()[:] = data
+        surface.mark_dirty()
         return surface
 
 def split_image(path, quads):
